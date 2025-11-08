@@ -558,9 +558,9 @@
                             <div class="title">💰 Budget Info</div>
                             <div class="description">Calculate total budgets</div>
                         </div>
-                        <div class="example-card" onclick="askQuestion('Show me all active projects')">
-                            <div class="title">✅ Active Projects</div>
-                            <div class="description">List currently active projects</div>
+                        <div class="example-card" onclick="askQuestion('Show me all projects')">
+                            <div class="title">📋 All Projects</div>
+                            <div class="description">List all projects</div>
                         </div>
                     </div>
                 </div>
@@ -694,7 +694,8 @@
                 if (/^(list|show|display)\s+(them|those|these)/i.test(question)) {
                     return `List all ${conversationContext.lastTopic}`;
                 } else if (/^(them|those|these|list|show)$/i.test(question)) {
-                    return `Show me all ${conversationContext.lastTopic}`;
+                    // Just list all of the topic without filtering
+                    return `List all ${conversationContext.lastTopic}`;
                 } else if (/^what about/i.test(question)) {
                     return question.replace(/them|those|these|it/i, conversationContext.lastTopic);
                 } else if (/^tell me (about|more)/i.test(question)) {
@@ -765,7 +766,7 @@
                     body: JSON.stringify({
                         question: question,
                         session_id: sessionId,
-                        include_sql: true
+                        include_sql: false
                     })
                 });
 
@@ -781,7 +782,11 @@
                     const responseHtml = formatDatabaseResponse(data, question);
                     addMessage(responseHtml, 'assistant');
                 } else {
-                    addMessage(`I encountered an error while querying the database: ${data.error}\n\nPlease try rephrasing your question or ask something else.`, 'assistant');
+                    // Clean error message - remove SQL from error
+                    let errorMsg = data.error || 'Unknown error';
+                    // Remove SQL query from error message
+                    errorMsg = errorMsg.split('LINE')[0].split('SELECT')[0].trim();
+                    addMessage(`I encountered an error while querying the database.\n\nPlease try rephrasing your question. For example:\n• "Show me all projects"\n• "List all departments"\n• "How many users are there?"`, 'assistant');
                 }
             } catch (error) {
                 addMessage('Sorry, I could not connect to the database. Please check your connection and try again.', 'assistant');
@@ -814,14 +819,10 @@
                     suggestions.push('Show me projects over $1 million');
                     suggestions.push('What is the total budget across all projects?');
                     suggestions.push('Which department has the highest budget?');
-                } else if (q.includes('active')) {
-                    suggestions.push('Show me completed projects');
-                    suggestions.push('How many projects are in progress?');
-                    suggestions.push('List projects by status');
                 } else {
                     suggestions.push('Which project manager is assigned to each project?');
                     suggestions.push('Show me project budgets');
-                    suggestions.push('List all active projects');
+                    suggestions.push('List all projects');
                 }
             }
 
@@ -841,9 +842,9 @@
 
             // Company-related suggestions
             else if (q.includes('compan')) {
-                suggestions.push('Which companies are working on active projects?');
-                suggestions.push('Show me all company contacts');
+                suggestions.push('Show me all companies');
                 suggestions.push('List projects by company');
+                suggestions.push('Which company has the most projects?');
             }
 
             // Budget-related suggestions
@@ -1021,9 +1022,9 @@
                         <div class="title">💰 Budget Info</div>
                         <div class="description">Calculate total budgets</div>
                     </div>
-                    <div class="example-card" onclick="askQuestion('Show me all active projects')">
-                        <div class="title">✅ Active Projects</div>
-                        <div class="description">List currently active projects</div>
+                    <div class="example-card" onclick="askQuestion('Show me all projects')">
+                        <div class="title">📋 All Projects</div>
+                        <div class="description">List all projects</div>
                     </div>
                 </div>
             `;

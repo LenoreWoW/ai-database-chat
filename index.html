@@ -535,7 +535,11 @@
 
             <div class="chat-container" id="chatContainer">
                 <div class="welcome-section" id="welcomeSection">
-                    <div class="welcome-title">Ask me anything about the database</div>
+                    <div class="welcome-title">Ask me anything</div>
+                    <p style="text-align: center; color: #A29475; margin-bottom: 20px; font-size: 14px;">
+                        I can handle general questions OR complex database queries<br>
+                        From simple counts to advanced analytics - just ask naturally
+                    </p>
 
                     <div class="examples-grid">
                         <div class="example-card" onclick="askQuestion('How many projects are there?')">
@@ -703,46 +707,101 @@
         }
 
         function isDatabaseQuestion(text) {
-            const dbKeywords = [
-                // Direct database references
-                'database', 'table', 'record', 'query', 'sql',
-
-                // Project-related
-                'project', 'projects',
-
-                // User/People related (when asking about database users)
-                'user', 'users', 'employee', 'employees', 'staff', 'team member',
-                'manager', 'managers', 'assigned to', 'working on',
-
-                // Department related
-                'department', 'departments', 'unit', 'units',
-
-                // Company related
-                'company', 'companies', 'contractor', 'vendor', 'client',
-
-                // Financial
-                'budget', 'cost', 'expense', 'spending', 'financial',
-
-                // Task/Work related
-                'task', 'tasks', 'assignment', 'deadline', 'milestone',
-
-                // Data queries
-                'how many', 'show me', 'list', 'display', 'find',
-                'count', 'total', 'sum', 'average', 'maximum', 'minimum',
-                'which', 'what is the', 'who is', 'when',
-
-                // Status
-                'status', 'progress', 'completion', 'overdue',
-
-                // Contracts
-                'contract', 'contracts', 'agreement'
-            ];
-
             const q = text.toLowerCase();
 
-            // Check if question contains database keywords
-            for (let keyword of dbKeywords) {
-                if (q.includes(keyword)) {
+            // Explicit database keywords
+            const explicitDbKeywords = [
+                'database', 'table', 'record', 'query', 'sql',
+                'project', 'projects', 'user', 'users', 'employee', 'employees',
+                'staff', 'team member', 'manager', 'managers',
+                'department', 'departments', 'unit', 'units',
+                'company', 'companies', 'contractor', 'vendor', 'client',
+                'budget', 'cost', 'expense', 'spending', 'financial',
+                'task', 'tasks', 'assignment', 'deadline', 'milestone',
+                'contract', 'contracts', 'agreement', 'status', 'progress'
+            ];
+
+            // Data analysis keywords (for analysts)
+            const analyticsKeywords = [
+                'analyze', 'analysis', 'trend', 'trends', 'pattern', 'patterns',
+                'correlation', 'compare', 'comparison', 'versus', 'vs',
+                'breakdown', 'distribution', 'ratio', 'percentage',
+                'top', 'bottom', 'highest', 'lowest', 'best', 'worst',
+                'rank', 'ranking', 'sorted', 'ordered', 'grouped',
+                'filter', 'filtered', 'where', 'having',
+                'join', 'joined', 'merged', 'combined',
+                'aggregate', 'aggregated', 'summarize', 'summary'
+            ];
+
+            // Query patterns (how people ask for data)
+            const queryPatterns = [
+                /how many/i, /how much/i, /what is the/i, /what are the/i,
+                /show me/i, /list/i, /display/i, /find/i, /get/i,
+                /count/i, /total/i, /sum/i, /average/i, /avg/i,
+                /maximum/i, /max/i, /minimum/i, /min/i,
+                /which/i, /who (is|are|has|have)/i, /when (did|was|were)/i,
+                /give me/i, /tell me/i, /fetch/i, /retrieve/i,
+                /select/i, /search/i, /lookup/i, /look up/i
+            ];
+
+            // Mathematical/statistical patterns
+            const mathPatterns = [
+                /calculate/i, /computation/i, /statistics/i, /stats/i,
+                /greater than/i, /less than/i, /equal to/i,
+                /between .* and/i, /range from/i, /from .* to/i,
+                /\d+%/, /percent/i, /percentage/i,
+                /more than \d+/i, /less than \d+/i, /over \d+/i, /under \d+/i
+            ];
+
+            // Check explicit keywords
+            for (let keyword of explicitDbKeywords) {
+                if (q.includes(keyword)) return true;
+            }
+
+            // Check analytics keywords
+            for (let keyword of analyticsKeywords) {
+                if (q.includes(keyword)) return true;
+            }
+
+            // Check query patterns
+            for (let pattern of queryPatterns) {
+                if (pattern.test(q)) return true;
+            }
+
+            // Check math/stats patterns
+            for (let pattern of mathPatterns) {
+                if (pattern.test(q)) return true;
+            }
+
+            // Advanced: Check if question is asking for specific information
+            // (data questions often have these structures)
+            const dataQuestionStructures = [
+                /^(what|which|who|when|where|how).*\?$/i,  // Question format
+                /(all|any|some|every).*(that|which|who)/i,  // Quantifier patterns
+                /(most|least|highest|lowest|best|worst)/i,  // Superlative patterns
+            ];
+
+            for (let pattern of dataQuestionStructures) {
+                if (pattern.test(q)) {
+                    // Additional check: is it asking about data entities?
+                    // If it mentions something that could be data, it's probably a DB question
+                    const likelyDataEntities = [
+                        /name/i, /number/i, /amount/i, /value/i, /total/i,
+                        /date/i, /time/i, /when/i, /who/i, /assigned/i,
+                        /responsible/i, /handling/i, /managing/i, /working/i
+                    ];
+
+                    for (let entity of likelyDataEntities) {
+                        if (entity.test(q)) return true;
+                    }
+                }
+            }
+
+            // Context-based detection: if previous was DB query, likely this is too
+            if (conversationContext.lastTopic) {
+                // Follow-up questions like "what about the others?" or "and the rest?"
+                if (/^(what|how) about/i.test(q) ||
+                    /^(and|what about|how about|show|list)/i.test(q)) {
                     return true;
                 }
             }
@@ -863,18 +922,22 @@
 
             document.getElementById('sendBtn').disabled = true;
 
+            // Check if it's a simple greeting first (these should never hit DB)
+            if (isSimpleGreeting(question)) {
+                const convType = getConversationType(question);
+                const response = getConversationalResponse(convType);
+                setTimeout(() => {
+                    addMessage(response, 'assistant');
+                    document.getElementById('sendBtn').disabled = false;
+                }, 300);
+                return;
+            }
+
             // Check if it's a database question
             if (!isDatabaseQuestion(question)) {
-                // Handle as conversation
+                // Handle as general conversation
                 setTimeout(() => {
-                    let response;
-                    if (isSimpleGreeting(question)) {
-                        const convType = getConversationType(question);
-                        response = getConversationalResponse(convType);
-                    } else {
-                        // Smart general response
-                        response = generateSmartResponse(question);
-                    }
+                    const response = generateSmartResponse(question);
                     addMessage(response, 'assistant');
                     document.getElementById('sendBtn').disabled = false;
                 }, 300);
@@ -1126,7 +1189,11 @@
             welcomeSection.className = 'welcome-section';
             welcomeSection.id = 'welcomeSection';
             welcomeSection.innerHTML = `
-                <div class="welcome-title">Ask me anything about the database</div>
+                <div class="welcome-title">Ask me anything</div>
+                <p style="text-align: center; color: #A29475; margin-bottom: 20px; font-size: 14px;">
+                    I can handle general questions OR complex database queries<br>
+                    From simple counts to advanced analytics - just ask naturally
+                </p>
 
                 <div class="examples-grid">
                     <div class="example-card" onclick="askQuestion('How many projects are there?')">

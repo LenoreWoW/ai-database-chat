@@ -13,8 +13,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-            background: #343541;
-            color: #ececf1;
+            background: #0d4261; /* Skyline */
+            color: #ffffff;
             height: 100vh;
             overflow: hidden;
         }
@@ -22,16 +22,39 @@
         .app-container {
             display: flex;
             height: 100vh;
+            max-width: 100vw;
+            overflow: hidden;
         }
 
         /* Sidebar */
         .sidebar {
             width: 260px;
-            background: #202123;
-            border-right: 1px solid #4d4d4f;
+            background: #8A1538; /* Al Adaam */
+            border-right: 1px solid #A29475; /* Dune */
             display: flex;
             flex-direction: column;
-            padding: 8px;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            color: #fdf39d; /* Sunrise */
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #A29475; /* Dune */
+            line-height: 1.4;
         }
 
         .new-chat-btn {
@@ -39,40 +62,63 @@
             align-items: center;
             gap: 10px;
             padding: 12px;
-            border: 1px solid #565869;
-            border-radius: 6px;
+            border: 1px solid #129b82; /* Palm */
+            border-radius: 8px;
             background: transparent;
-            color: #ececf1;
+            color: #ffffff;
             cursor: pointer;
             font-size: 14px;
             transition: background 0.2s;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
         }
 
         .new-chat-btn:hover {
-            background: #2a2b32;
+            background: #129b82; /* Palm */
         }
 
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .sidebar-info {
             padding: 12px;
-            font-size: 12px;
-            color: #8e8ea0;
-            border-top: 1px solid #4d4d4f;
+            font-size: 11px;
+            color: #A29475; /* Dune */
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
         }
 
-        .sidebar-info div {
-            margin-bottom: 8px;
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        .sidebar-info strong {
-            color: #ececf1;
-            display: block;
-            margin-bottom: 4px;
+        .stat-card {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid rgba(162,148,117,0.2); /* Dune */
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fdf39d; /* Sunrise */
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #A29475; /* Dune */
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Main Chat Area */
@@ -81,122 +127,137 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
+            max-width: calc(100vw - 260px);
         }
 
         .chat-header {
-            padding: 12px 20px;
-            border-bottom: 1px solid #4d4d4f;
-            background: #343541;
+            padding: 16px 20px;
+            border-bottom: 1px solid #A29475; /* Dune */
+            background: #511C3C; /* Dark Purple */
             font-weight: 600;
-            font-size: 14px;
+            font-size: 16px;
+            color: #fdf39d; /* Sunrise */
         }
 
         .chat-container {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
+            background: #0d4261; /* Skyline */
         }
 
         .message-wrapper {
             display: flex;
-            padding: 24px 0;
-            gap: 24px;
-            max-width: 800px;
+            padding: 20px 0;
+            gap: 16px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
         }
 
         .message-wrapper.user {
-            background: #343541;
+            background: rgba(18,155,130,0.05); /* Palm tint */
         }
 
         .message-wrapper.assistant {
-            background: #444654;
+            background: rgba(81,28,60,0.1); /* Dark Purple tint */
         }
 
         .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 2px;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             flex-shrink: 0;
         }
 
         .avatar.user {
-            background: #5436DA;
+            background: #129b82; /* Palm */
         }
 
         .avatar.assistant {
-            background: #19c37d;
+            background: #8A1538; /* Al Adaam */
         }
 
         .message-content {
             flex: 1;
             line-height: 1.6;
-            font-size: 16px;
+            font-size: 15px;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
         }
 
         .message-content pre {
-            background: #2d2d2d;
+            background: rgba(0,0,0,0.3);
             padding: 12px;
             border-radius: 6px;
             overflow-x: auto;
             margin: 12px 0;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: 13px;
+            border: 1px solid #A29475; /* Dune */
+            max-width: 100%;
         }
 
         .message-content .data-table {
-            background: #2d2d2d;
+            background: rgba(0,0,0,0.3);
             padding: 12px;
             border-radius: 6px;
             margin: 12px 0;
             max-height: 300px;
             overflow: auto;
+            border: 1px solid #A29475; /* Dune */
         }
 
         .message-content .sql-query {
-            background: #1e1e1e;
+            background: rgba(81,28,60,0.3); /* Dark Purple */
             padding: 12px;
             border-radius: 6px;
             margin: 12px 0;
-            border-left: 3px solid #19c37d;
+            border-left: 3px solid #fdf39d; /* Sunrise */
+            overflow-x: auto;
         }
 
         .message-content .sql-query strong {
-            color: #19c37d;
+            color: #fdf39d; /* Sunrise */
             display: block;
             margin-bottom: 8px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .message-content code {
-            background: #2d2d2d;
+            background: rgba(0,0,0,0.3);
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
+            font-size: 13px;
+            word-break: break-all;
         }
 
         /* Input Area */
         .input-area {
             padding: 20px;
-            background: #343541;
-            border-top: 1px solid #4d4d4f;
+            background: #511C3C; /* Dark Purple */
+            border-top: 1px solid #A29475; /* Dune */
         }
 
         .input-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             position: relative;
         }
 
         .input-wrapper {
-            background: #40414f;
+            background: rgba(0,0,0,0.3);
             border-radius: 12px;
-            border: 1px solid #565869;
+            border: 2px solid #129b82; /* Palm */
             display: flex;
             align-items: center;
             padding: 12px;
@@ -204,7 +265,7 @@
         }
 
         .input-wrapper:focus-within {
-            border-color: #8e8ea0;
+            border-color: #fdf39d; /* Sunrise */
         }
 
         #questionInput {
@@ -212,23 +273,23 @@
             background: transparent;
             border: none;
             outline: none;
-            color: #ececf1;
-            font-size: 16px;
+            color: #ffffff;
+            font-size: 15px;
             resize: none;
-            max-height: 200px;
+            max-height: 150px;
             font-family: inherit;
         }
 
         #questionInput::placeholder {
-            color: #8e8ea0;
+            color: #A29475; /* Dune */
         }
 
         .send-btn {
-            background: #19c37d;
+            background: #129b82; /* Palm */
             color: white;
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 6px;
             cursor: pointer;
             display: flex;
@@ -239,18 +300,19 @@
         }
 
         .send-btn:hover:not(:disabled) {
-            background: #1aa876;
+            background: #4194b3; /* Sea */
         }
 
         .send-btn:disabled {
-            background: #565869;
+            background: #A29475; /* Dune */
             cursor: not-allowed;
+            opacity: 0.5;
         }
 
         /* Loading */
         .loading-indicator {
             display: none;
-            padding: 24px 0;
+            padding: 20px 0;
         }
 
         .loading-indicator.active {
@@ -266,7 +328,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #8e8ea0;
+            background: #fdf39d; /* Sunrise */
             animation: bounce 1.4s infinite ease-in-out both;
         }
 
@@ -288,38 +350,58 @@
         }
 
         /* Example prompts */
-        .examples-grid {
-            max-width: 800px;
+        .welcome-section {
+            max-width: 900px;
             margin: 40px auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 12px;
             padding: 0 20px;
         }
 
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+            color: #fdf39d; /* Sunrise */
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
         .example-card {
-            background: #444654;
+            background: rgba(81,28,60,0.3); /* Dark Purple */
             padding: 16px;
             border-radius: 8px;
-            border: 1px solid #565869;
+            border: 1px solid #A29475; /* Dune */
             cursor: pointer;
             transition: all 0.2s;
+            overflow: hidden;
         }
 
         .example-card:hover {
-            background: #505162;
-            border-color: #8e8ea0;
+            background: rgba(18,155,130,0.2); /* Palm */
+            border-color: #129b82; /* Palm */
+            transform: translateY(-2px);
         }
 
         .example-card .title {
             font-weight: 600;
             margin-bottom: 6px;
-            color: #ececf1;
+            color: #fdf39d; /* Sunrise */
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .example-card .description {
-            font-size: 13px;
-            color: #8e8ea0;
+            font-size: 12px;
+            color: #A29475; /* Dune */
+            line-height: 1.4;
         }
 
         /* Scrollbar */
@@ -329,56 +411,38 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #2d2d2d;
+            background: rgba(0,0,0,0.2);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #565869;
+            background: #A29475; /* Dune */
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #6e6e80;
+            background: #129b82; /* Palm */
         }
 
-        /* Stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 12px;
-        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: -260px;
+                z-index: 1000;
+                transition: left 0.3s;
+            }
 
-        .stat-card {
-            background: #2a2b32;
-            padding: 12px;
-            border-radius: 6px;
-            text-align: center;
-        }
+            .sidebar.open {
+                left: 0;
+            }
 
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #19c37d;
-        }
+            .main-content {
+                max-width: 100vw;
+            }
 
-        .stat-label {
-            font-size: 11px;
-            color: #8e8ea0;
-            margin-top: 4px;
-        }
-
-        .welcome-section {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .welcome-title {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-align: center;
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -386,6 +450,11 @@
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>AI Database</h2>
+                <p>Military Project Management System</p>
+            </div>
+
             <button class="new-chat-btn" onclick="newChat()">
                 <span>+</span>
                 <span>New chat</span>
@@ -411,12 +480,11 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">5</div>
-                        <div class="stat-label">Depts</div>
+                        <div class="stat-label">Departments</div>
                     </div>
                 </div>
-                <div style="font-size: 11px;">
-                    <strong>AI Database Assistant</strong>
-                    Powered by Hugging Face Spaces
+                <div style="font-size: 10px; text-align: center; margin-top: 8px;">
+                    Powered by AI on Hugging Face
                 </div>
             </div>
         </div>
@@ -424,7 +492,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <div class="chat-header">
-                Military Project Database Chat
+                Military Project Database Assistant
             </div>
 
             <div class="chat-container" id="chatContainer">
@@ -442,11 +510,11 @@
                         </div>
                         <div class="example-card" onclick="askQuestion('What is the total budget?')">
                             <div class="title">💰 Budget Info</div>
-                            <div class="description">Calculate total project budgets</div>
+                            <div class="description">Calculate total budgets</div>
                         </div>
                         <div class="example-card" onclick="askQuestion('How many users are there?')">
                             <div class="title">👥 User Count</div>
-                            <div class="description">Get total number of users</div>
+                            <div class="description">Get total user count</div>
                         </div>
                     </div>
                 </div>
@@ -525,14 +593,12 @@
         };
 
         function isConversational(text) {
-            // Check if it's a greeting
             for (let pattern of GREETINGS) {
                 if (pattern.test(text)) {
                     return 'greeting';
                 }
             }
 
-            // Check if it's conversational
             for (let pattern of CONVERSATIONAL) {
                 if (pattern.test(text)) {
                     if (/thank/i.test(text)) return 'thanks';
@@ -557,25 +623,20 @@
 
             if (!question) return;
 
-            // Hide welcome section
             const welcomeSection = document.getElementById('welcomeSection');
             if (welcomeSection) {
                 welcomeSection.style.display = 'none';
             }
 
-            // Add user message
             addMessage(question, 'user');
             input.value = '';
             autoResize(input);
 
-            // Disable input
             document.getElementById('sendBtn').disabled = true;
 
-            // Check if it's conversational
             const conversationType = isConversational(question);
 
             if (conversationType) {
-                // Handle conversationally without calling API
                 setTimeout(() => {
                     const response = getConversationalResponse(conversationType);
                     addMessage(response, 'assistant');
@@ -584,11 +645,9 @@
                 return;
             }
 
-            // Show loading
             const loadingId = showLoading();
 
             try {
-                // Call database API
                 const response = await fetch(`${API_BASE}/api/v1/query`, {
                     method: 'POST',
                     headers: {
@@ -622,7 +681,6 @@
         function formatDatabaseResponse(data) {
             let html = '';
 
-            // Format results
             if (data.row_count === 0) {
                 html += 'No results found for your query.';
             } else if (data.row_count === 1 && data.data[0] && Object.keys(data.data[0]).length === 1) {
@@ -637,12 +695,10 @@
                 html += `\n<em>...and ${data.row_count - 10} more rows</em>`;
             }
 
-            // Add SQL query
             if (data.sql) {
                 html += `\n\n<div class="sql-query"><strong>SQL Query:</strong>\n<code>${escapeHtml(data.sql)}</code></div>`;
             }
 
-            // Add execution time
             if (data.execution_time_ms) {
                 html += `\n\n<small>⚡ Executed in ${data.execution_time_ms.toFixed(2)}ms</small>`;
             }
@@ -663,7 +719,6 @@
             const content = document.createElement('div');
             content.className = 'message-content';
 
-            // Convert newlines to <br> for simple text
             const formattedText = text.replace(/\n/g, '<br>');
             content.innerHTML = formattedText;
 
@@ -721,7 +776,7 @@
 
         function autoResize(textarea) {
             textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
         }
 
         function escapeHtml(text) {
@@ -750,18 +805,17 @@
                     </div>
                     <div class="example-card" onclick="askQuestion('What is the total budget?')">
                         <div class="title">💰 Budget Info</div>
-                        <div class="description">Calculate total project budgets</div>
+                        <div class="description">Calculate total budgets</div>
                     </div>
                     <div class="example-card" onclick="askQuestion('How many users are there?')">
                         <div class="title">👥 User Count</div>
-                        <div class="description">Get total number of users</div>
+                        <div class="description">Get total user count</div>
                     </div>
                 </div>
             `;
             document.getElementById('chatContainer').appendChild(welcomeSection);
         }
 
-        // Auto-focus on load
         window.onload = function() {
             document.getElementById('questionInput').focus();
         };

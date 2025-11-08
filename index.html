@@ -590,6 +590,11 @@
     <script>
         const API_BASE = 'https://im-lenore-aiready-database-api.hf.space';
         let sessionId = null;
+        let conversationContext = {
+            lastQuestion: '',
+            lastAnswer: '',
+            lastTopic: ''
+        };
 
         // Conversation detection patterns
         const GREETINGS = [
@@ -663,9 +668,61 @@
             return responses[Math.floor(Math.random() * responses.length)];
         }
 
+        function enhanceQuestionWithContext(question) {
+            const q = question.toLowerCase();
+
+            // Check if question has vague pronouns or references
+            const vaguePatterns = [
+                /^(list|show|display|get|find)\s+(them|those|these|it)/i,
+                /^what about (them|those|these|it)/i,
+                /^tell me (about|more)/i,
+                /^(them|those|these)$/i,
+                /^list$/i,
+                /^show$/i
+            ];
+
+            let needsContext = false;
+            for (let pattern of vaguePatterns) {
+                if (pattern.test(question)) {
+                    needsContext = true;
+                    break;
+                }
+            }
+
+            if (needsContext && conversationContext.lastTopic) {
+                // Enhance the question with context
+                if (/^(list|show|display)\s+(them|those|these)/i.test(question)) {
+                    return `List all ${conversationContext.lastTopic}`;
+                } else if (/^(them|those|these|list|show)$/i.test(question)) {
+                    return `Show me all ${conversationContext.lastTopic}`;
+                } else if (/^what about/i.test(question)) {
+                    return question.replace(/them|those|these|it/i, conversationContext.lastTopic);
+                } else if (/^tell me (about|more)/i.test(question)) {
+                    return `Tell me more about ${conversationContext.lastTopic}`;
+                }
+            }
+
+            return question;
+        }
+
+        function extractTopicFromQuestion(question) {
+            const q = question.toLowerCase();
+
+            if (q.includes('project')) return 'projects';
+            if (q.includes('user')) return 'users';
+            if (q.includes('department')) return 'departments';
+            if (q.includes('compan')) return 'companies';
+            if (q.includes('task')) return 'tasks';
+            if (q.includes('budget')) return 'budgets';
+            if (q.includes('manager')) return 'project managers';
+            if (q.includes('contract')) return 'contracts';
+
+            return '';
+        }
+
         async function submitQuestion() {
             const input = document.getElementById('questionInput');
-            const question = input.value.trim();
+            let question = input.value.trim();
 
             if (!question) return;
 
@@ -674,7 +731,13 @@
                 welcomeSection.style.display = 'none';
             }
 
-            addMessage(question, 'user');
+            // Store original question for display
+            const displayQuestion = question;
+
+            // Enhance question with context if needed
+            question = enhanceQuestionWithContext(question);
+
+            addMessage(displayQuestion, 'user');
             input.value = '';
             autoResize(input);
 
@@ -710,6 +773,11 @@
 
                 if (data.success) {
                     sessionId = data.session_id;
+
+                    // Update conversation context
+                    conversationContext.lastQuestion = question;
+                    conversationContext.lastTopic = extractTopicFromQuestion(question);
+
                     const responseHtml = formatDatabaseResponse(data, question);
                     addMessage(responseHtml, 'assistant');
                 } else {
@@ -920,6 +988,11 @@
 
         function newChat() {
             sessionId = null;
+            conversationContext = {
+                lastQuestion: '',
+                lastAnswer: '',
+                lastTopic: ''
+            };
             document.getElementById('chatContainer').innerHTML = '';
             const welcomeSection = document.createElement('div');
             welcomeSection.className = 'welcome-section';

@@ -241,6 +241,44 @@
             word-break: break-all;
         }
 
+        /* Suggested Questions */
+        .suggested-questions {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(162,148,117,0.3); /* Dune */
+        }
+
+        .suggested-label {
+            font-size: 12px;
+            color: #A29475; /* Dune */
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            background: rgba(18,155,130,0.15); /* Palm */
+            border: 1px solid #129b82; /* Palm */
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .suggestion-chip:hover {
+            background: #129b82; /* Palm */
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(18,155,130,0.3);
+        }
+
         /* Input Area */
         .input-area {
             padding: 20px;
@@ -672,7 +710,7 @@
 
                 if (data.success) {
                     sessionId = data.session_id;
-                    const responseHtml = formatDatabaseResponse(data);
+                    const responseHtml = formatDatabaseResponse(data, question);
                     addMessage(responseHtml, 'assistant');
                 } else {
                     addMessage(`I encountered an error while querying the database: ${data.error}\n\nPlease try rephrasing your question or ask something else.`, 'assistant');
@@ -686,7 +724,85 @@
             }
         }
 
-        function formatDatabaseResponse(data) {
+        function getSuggestedQuestions(question) {
+            const suggestions = [];
+            const q = question.toLowerCase();
+
+            // Project-related suggestions
+            if (q.includes('project')) {
+                if (q.includes('count') || q.includes('how many')) {
+                    suggestions.push('Show me all active projects');
+                    suggestions.push('Which project has the highest budget?');
+                    suggestions.push('List projects by department');
+                } else if (q.includes('manager')) {
+                    suggestions.push('Show me all project managers');
+                    suggestions.push('Which projects have no manager assigned?');
+                    suggestions.push('What is the average project budget?');
+                } else if (q.includes('company') || q.includes('companies')) {
+                    suggestions.push('Show me all companies');
+                    suggestions.push('Which company handles the most projects?');
+                    suggestions.push('List projects grouped by company');
+                } else if (q.includes('budget')) {
+                    suggestions.push('Show me projects over $1 million');
+                    suggestions.push('What is the total budget across all projects?');
+                    suggestions.push('Which department has the highest budget?');
+                } else if (q.includes('active')) {
+                    suggestions.push('Show me completed projects');
+                    suggestions.push('How many projects are in progress?');
+                    suggestions.push('List projects by status');
+                } else {
+                    suggestions.push('Which project manager is assigned to each project?');
+                    suggestions.push('Show me project budgets');
+                    suggestions.push('List all active projects');
+                }
+            }
+
+            // Department-related suggestions
+            else if (q.includes('department')) {
+                suggestions.push('How many users are in each department?');
+                suggestions.push('Show me projects by department');
+                suggestions.push('Which department has the most projects?');
+            }
+
+            // User-related suggestions
+            else if (q.includes('user')) {
+                suggestions.push('Show me all users by role');
+                suggestions.push('Which users are project managers?');
+                suggestions.push('List users by department');
+            }
+
+            // Company-related suggestions
+            else if (q.includes('compan')) {
+                suggestions.push('Which companies are working on active projects?');
+                suggestions.push('Show me all company contacts');
+                suggestions.push('List projects by company');
+            }
+
+            // Budget-related suggestions
+            else if (q.includes('budget') || q.includes('cost') || q.includes('expense')) {
+                suggestions.push('Show me the most expensive projects');
+                suggestions.push('What is the total budget by department?');
+                suggestions.push('List projects with budget over $500k');
+            }
+
+            // Task-related suggestions
+            else if (q.includes('task')) {
+                suggestions.push('Show me all high priority tasks');
+                suggestions.push('Which tasks are overdue?');
+                suggestions.push('List tasks by project');
+            }
+
+            // Default suggestions
+            else {
+                suggestions.push('Show me all projects and their managers');
+                suggestions.push('Which company is handling which project?');
+                suggestions.push('What is the total budget?');
+            }
+
+            return suggestions.slice(0, 3);
+        }
+
+        function formatDatabaseResponse(data, question) {
             let html = '';
 
             if (data.row_count === 0) {
@@ -705,6 +821,19 @@
 
             if (data.execution_time_ms) {
                 html += `\n\n<small style="color: #A29475;">⚡ Executed in ${data.execution_time_ms.toFixed(2)}ms</small>`;
+            }
+
+            // Add suggested questions
+            const suggestions = getSuggestedQuestions(question);
+            if (suggestions.length > 0) {
+                html += '<div class="suggested-questions">';
+                html += '<div class="suggested-label">💡 You might also want to ask:</div>';
+                html += '<div class="suggestion-chips">';
+                suggestions.forEach(suggestion => {
+                    html += `<span class="suggestion-chip" onclick="askQuestion('${suggestion.replace(/'/g, "\\'")}')">${suggestion}</span>`;
+                });
+                html += '</div>';
+                html += '</div>';
             }
 
             return html;

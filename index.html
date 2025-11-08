@@ -508,13 +508,21 @@
                             <div class="title">🏢 Departments</div>
                             <div class="description">List all department names</div>
                         </div>
+                        <div class="example-card" onclick="askQuestion('Which project manager is assigned to which project?')">
+                            <div class="title">👨‍💼 Project Managers</div>
+                            <div class="description">See project assignments</div>
+                        </div>
+                        <div class="example-card" onclick="askQuestion('Which company is handling which project?')">
+                            <div class="title">🏭 Company Projects</div>
+                            <div class="description">View company assignments</div>
+                        </div>
                         <div class="example-card" onclick="askQuestion('What is the total budget?')">
                             <div class="title">💰 Budget Info</div>
                             <div class="description">Calculate total budgets</div>
                         </div>
-                        <div class="example-card" onclick="askQuestion('How many users are there?')">
-                            <div class="title">👥 User Count</div>
-                            <div class="description">Get total user count</div>
+                        <div class="example-card" onclick="askQuestion('Show me all active projects')">
+                            <div class="title">✅ Active Projects</div>
+                            <div class="description">List currently active projects</div>
                         </div>
                     </div>
                 </div>
@@ -695,12 +703,8 @@
                 html += `\n<em>...and ${data.row_count - 10} more rows</em>`;
             }
 
-            if (data.sql) {
-                html += `\n\n<div class="sql-query"><strong>SQL Query:</strong>\n<code>${escapeHtml(data.sql)}</code></div>`;
-            }
-
             if (data.execution_time_ms) {
-                html += `\n\n<small>⚡ Executed in ${data.execution_time_ms.toFixed(2)}ms</small>`;
+                html += `\n\n<small style="color: #A29475;">⚡ Executed in ${data.execution_time_ms.toFixed(2)}ms</small>`;
             }
 
             return html;
@@ -803,13 +807,21 @@
                         <div class="title">🏢 Departments</div>
                         <div class="description">List all department names</div>
                     </div>
+                    <div class="example-card" onclick="askQuestion('Which project manager is assigned to which project?')">
+                        <div class="title">👨‍💼 Project Managers</div>
+                        <div class="description">See project assignments</div>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('Which company is handling which project?')">
+                        <div class="title">🏭 Company Projects</div>
+                        <div class="description">View company assignments</div>
+                    </div>
                     <div class="example-card" onclick="askQuestion('What is the total budget?')">
                         <div class="title">💰 Budget Info</div>
                         <div class="description">Calculate total budgets</div>
                     </div>
-                    <div class="example-card" onclick="askQuestion('How many users are there?')">
-                        <div class="title">👥 User Count</div>
-                        <div class="description">Get total user count</div>
+                    <div class="example-card" onclick="askQuestion('Show me all active projects')">
+                        <div class="title">✅ Active Projects</div>
+                        <div class="description">List currently active projects</div>
                     </div>
                 </div>
             `;

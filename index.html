@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Database Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #343541;
+            color: #ececf1;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #202123;
+            border-right: 1px solid #4d4d4f;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+        }
+
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid #565869;
+            border-radius: 6px;
+            background: transparent;
+            color: #ececf1;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .new-chat-btn:hover {
+            background: #2a2b32;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-info {
+            padding: 12px;
+            font-size: 12px;
+            color: #8e8ea0;
+            border-top: 1px solid #4d4d4f;
+        }
+
+        .sidebar-info div {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-info strong {
+            color: #ececf1;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid #4d4d4f;
+            background: #343541;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message-wrapper {
+            display: flex;
+            padding: 24px 0;
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .message-wrapper.user {
+            background: #343541;
+        }
+
+        .message-wrapper.assistant {
+            background: #444654;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .avatar.user {
+            background: #5436DA;
+        }
+
+        .avatar.assistant {
+            background: #19c37d;
+        }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .message-content pre {
+            background: #2d2d2d;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .message-content .data-table {
+            background: #2d2d2d;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        .message-content .sql-query {
+            background: #1e1e1e;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            border-left: 3px solid #19c37d;
+        }
+
+        .message-content .sql-query strong {
+            color: #19c37d;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .message-content code {
+            background: #2d2d2d;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: #343541;
+            border-top: 1px solid #4d4d4f;
+        }
+
+        .input-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .input-wrapper {
+            background: #40414f;
+            border-radius: 12px;
+            border: 1px solid #565869;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #8e8ea0;
+        }
+
+        #questionInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ececf1;
+            font-size: 16px;
+            resize: none;
+            max-height: 200px;
+            font-family: inherit;
+        }
+
+        #questionInput::placeholder {
+            color: #8e8ea0;
+        }
+
+        .send-btn {
+            background: #19c37d;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #1aa876;
+        }
+
+        .send-btn:disabled {
+            background: #565869;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading-indicator {
+            display: none;
+            padding: 24px 0;
+        }
+
+        .loading-indicator.active {
+            display: flex;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #8e8ea0;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Example prompts */
+        .examples-grid {
+            max-width: 800px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            padding: 0 20px;
+        }
+
+        .example-card {
+            background: #444654;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #565869;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-card:hover {
+            background: #505162;
+            border-color: #8e8ea0;
+        }
+
+        .example-card .title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #ececf1;
+        }
+
+        .example-card .description {
+            font-size: 13px;
+            color: #8e8ea0;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #565869;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6e6e80;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card {
+            background: #2a2b32;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #19c37d;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #8e8ea0;
+            margin-top: 4px;
+        }
+
+        .welcome-section {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <button class="new-chat-btn" onclick="newChat()">
+                <span>+</span>
+                <span>New chat</span>
+            </button>
+
+            <div class="sidebar-content">
+                <!-- Chat history would go here -->
+            </div>
+
+            <div class="sidebar-info">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">65</div>
+                        <div class="stat-label">Tables</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">15</div>
+                        <div class="stat-label">Projects</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">41</div>
+                        <div class="stat-label">Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Depts</div>
+                    </div>
+                </div>
+                <div style="font-size: 11px;">
+                    <strong>AI Database Assistant</strong>
+                    Powered by Hugging Face Spaces
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="chat-header">
+                Military Project Database Chat
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-section" id="welcomeSection">
+                    <div class="welcome-title">Ask me anything about the database</div>
+
+                    <div class="examples-grid">
+                        <div class="example-card" onclick="askQuestion('How many projects are there?')">
+                            <div class="title">📊 Project Count</div>
+                            <div class="description">Get total number of projects</div>
+                        </div>
+                        <div class="example-card" onclick="askQuestion('Show me all departments')">
+                            <div class="title">🏢 Departments</div>
+                            <div class="description">List all department names</div>
+                        </div>
+                        <div class="example-card" onclick="askQuestion('What is the total budget?')">
+                            <div class="title">💰 Budget Info</div>
+                            <div class="description">Calculate total project budgets</div>
+                        </div>
+                        <div class="example-card" onclick="askQuestion('How many users are there?')">
+                            <div class="title">👥 User Count</div>
+                            <div class="description">Get total number of users</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="questionInput"
+                            placeholder="Send a message..."
+                            rows="1"
+                            onkeydown="handleKeyDown(event)"
+                            oninput="autoResize(this)"
+                        ></textarea>
+                        <button class="send-btn" onclick="submitQuestion()" id="sendBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://im-lenore-aiready-database-api.hf.space';
+        let sessionId = null;
+
+        // Conversation detection patterns
+        const GREETINGS = [
+            /^(hi|hello|hey|greetings|good morning|good afternoon|good evening|sup|yo)[\s!.?]*$/i,
+            /^how are you[\s!.?]*$/i,
+            /^what'?s up[\s!.?]*$/i,
+            /^nice to meet you[\s!.?]*$/i
+        ];
+
+        const CONVERSATIONAL = [
+            /^(thank you|thanks|thx|ty)[\s!.?]*$/i,
+            /^(bye|goodbye|see you|later)[\s!.?]*$/i,
+            /^(ok|okay|alright|got it|cool)[\s!.?]*$/i,
+            /^who (are you|made you|created you)[\s!.?]*$/i,
+            /^what (can you do|are you)[\s!.?]*$/i,
+            /^help[\s!.?]*$/i
+        ];
+
+        const CONVERSATIONAL_RESPONSES = {
+            greeting: [
+                "Hello! I'm your AI assistant for the military project database. I can help you query project data, user information, budgets, and more. What would you like to know?",
+                "Hi there! I'm here to help you explore the database. Ask me anything about projects, departments, users, or budgets!",
+                "Hey! Ready to dive into the data? I can answer questions about the military project database."
+            ],
+            thanks: [
+                "You're welcome! Let me know if you need anything else.",
+                "Happy to help! Feel free to ask more questions.",
+                "My pleasure! What else can I help you with?"
+            ],
+            goodbye: [
+                "Goodbye! Come back anytime you need to query the database.",
+                "See you later! Happy to help anytime.",
+                "Take care! I'll be here when you need me."
+            ],
+            capabilities: [
+                "I can help you query the military project database! I understand natural language questions and convert them to SQL. Try asking about projects, users, departments, budgets, tasks, or any other data in the 65-table database.",
+                "I'm an AI-powered database assistant. Ask me questions in plain English, and I'll query the database for you. For example: 'How many active projects?' or 'Show me all departments'."
+            ],
+            help: [
+                "I can answer questions about the database in natural language. Try:\n• 'How many projects are there?'\n• 'Show me all departments'\n• 'What's the total budget?'\n• 'List all users'\n\nJust ask naturally and I'll figure out the SQL!",
+                "Ask me anything about the database! I understand questions like 'How many users?', 'Show me project budgets', or 'List all departments'. Just type your question naturally."
+            ],
+            default: [
+                "I'm here to help with database queries. Try asking about projects, users, departments, or budgets!",
+                "Let me know what you'd like to find in the database!"
+            ]
+        };
+
+        function isConversational(text) {
+            // Check if it's a greeting
+            for (let pattern of GREETINGS) {
+                if (pattern.test(text)) {
+                    return 'greeting';
+                }
+            }
+
+            // Check if it's conversational
+            for (let pattern of CONVERSATIONAL) {
+                if (pattern.test(text)) {
+                    if (/thank/i.test(text)) return 'thanks';
+                    if (/bye|goodbye|see you|later/i.test(text)) return 'goodbye';
+                    if (/who|what (are you|can you)/i.test(text)) return 'capabilities';
+                    if (/help/i.test(text)) return 'help';
+                    return 'default';
+                }
+            }
+
+            return null;
+        }
+
+        function getConversationalResponse(type) {
+            const responses = CONVERSATIONAL_RESPONSES[type] || CONVERSATIONAL_RESPONSES.default;
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        async function submitQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            // Hide welcome section
+            const welcomeSection = document.getElementById('welcomeSection');
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+            }
+
+            // Add user message
+            addMessage(question, 'user');
+            input.value = '';
+            autoResize(input);
+
+            // Disable input
+            document.getElementById('sendBtn').disabled = true;
+
+            // Check if it's conversational
+            const conversationType = isConversational(question);
+
+            if (conversationType) {
+                // Handle conversationally without calling API
+                setTimeout(() => {
+                    const response = getConversationalResponse(conversationType);
+                    addMessage(response, 'assistant');
+                    document.getElementById('sendBtn').disabled = false;
+                }, 500);
+                return;
+            }
+
+            // Show loading
+            const loadingId = showLoading();
+
+            try {
+                // Call database API
+                const response = await fetch(`${API_BASE}/api/v1/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        session_id: sessionId,
+                        include_sql: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionId = data.session_id;
+                    const responseHtml = formatDatabaseResponse(data);
+                    addMessage(responseHtml, 'assistant');
+                } else {
+                    addMessage(`I encountered an error while querying the database: ${data.error}\n\nPlease try rephrasing your question or ask something else.`, 'assistant');
+                }
+            } catch (error) {
+                addMessage('Sorry, I could not connect to the database. Please check your connection and try again.', 'assistant');
+                console.error('Error:', error);
+            } finally {
+                hideLoading(loadingId);
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        function formatDatabaseResponse(data) {
+            let html = '';
+
+            // Format results
+            if (data.row_count === 0) {
+                html += 'No results found for your query.';
+            } else if (data.row_count === 1 && data.data[0] && Object.keys(data.data[0]).length === 1) {
+                const value = Object.values(data.data[0])[0];
+                html += `The answer is: <strong>${value}</strong>`;
+            } else if (data.row_count <= 10) {
+                html += `I found ${data.row_count} result${data.row_count > 1 ? 's' : ''}:\n\n`;
+                html += '<div class="data-table"><pre>' + JSON.stringify(data.data, null, 2) + '</pre></div>';
+            } else {
+                html += `I found ${data.row_count} results. Here are the first 10:\n\n`;
+                html += '<div class="data-table"><pre>' + JSON.stringify(data.data.slice(0, 10), null, 2) + '</pre></div>';
+                html += `\n<em>...and ${data.row_count - 10} more rows</em>`;
+            }
+
+            // Add SQL query
+            if (data.sql) {
+                html += `\n\n<div class="sql-query"><strong>SQL Query:</strong>\n<code>${escapeHtml(data.sql)}</code></div>`;
+            }
+
+            // Add execution time
+            if (data.execution_time_ms) {
+                html += `\n\n<small>⚡ Executed in ${data.execution_time_ms.toFixed(2)}ms</small>`;
+            }
+
+            return html;
+        }
+
+        function addMessage(text, type) {
+            const chatContainer = document.getElementById('chatContainer');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `message-wrapper ${type}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${type}`;
+            avatar.textContent = type === 'user' ? '👤' : '🤖';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+
+            // Convert newlines to <br> for simple text
+            const formattedText = text.replace(/\n/g, '<br>');
+            content.innerHTML = formattedText;
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(content);
+            chatContainer.appendChild(wrapper);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        let loadingCounter = 0;
+
+        function showLoading() {
+            const chatContainer = document.getElementById('chatContainer');
+            const id = `loading-${loadingCounter++}`;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper assistant loading-indicator active';
+            wrapper.id = id;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar assistant';
+            avatar.textContent = '🤖';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(content);
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return id;
+        }
+
+        function hideLoading(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('questionInput').value = question;
+            submitQuestion();
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                submitQuestion();
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function newChat() {
+            sessionId = null;
+            document.getElementById('chatContainer').innerHTML = '';
+            const welcomeSection = document.createElement('div');
+            welcomeSection.className = 'welcome-section';
+            welcomeSection.id = 'welcomeSection';
+            welcomeSection.innerHTML = `
+                <div class="welcome-title">Ask me anything about the database</div>
+
+                <div class="examples-grid">
+                    <div class="example-card" onclick="askQuestion('How many projects are there?')">
+                        <div class="title">📊 Project Count</div>
+                        <div class="description">Get total number of projects</div>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('Show me all departments')">
+                        <div class="title">🏢 Departments</div>
+                        <div class="description">List all department names</div>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('What is the total budget?')">
+                        <div class="title">💰 Budget Info</div>
+                        <div class="description">Calculate total project budgets</div>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('How many users are there?')">
+                        <div class="title">👥 User Count</div>
+                        <div class="description">Get total number of users</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('chatContainer').appendChild(welcomeSection);
+        }
+
+        // Auto-focus on load
+        window.onload = function() {
+            document.getElementById('questionInput').focus();
+        };
+    </script>
+</body>
+</html>

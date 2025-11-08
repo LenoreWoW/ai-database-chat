@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Database Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .chat-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .assistant-message {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .assistant-message .sql {
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .assistant-message .data {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-size: 0.95em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .example-btn {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Database Assistant</h1>
+        <p class="subtitle">Ask questions about military project data in natural language</p>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">65</div>
+                <div class="stat-label">Tables</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">15</div>
+                <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">41</div>
+                <div class="stat-label">Users</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Departments</div>
+            </div>
+        </div>
+
+        <h3 style="margin: 20px 0 10px 0; color: #666;">Try these examples:</h3>
+        <div class="examples">
+            <button class="example-btn" onclick="askQuestion('How many projects are there?')">
+                How many projects?
+            </button>
+            <button class="example-btn" onclick="askQuestion('Show me all departments')">
+                Show all departments
+            </button>
+            <button class="example-btn" onclick="askQuestion('How many users are there?')">
+                How many users?
+            </button>
+            <button class="example-btn" onclick="askQuestion('What is the total budget?')">
+                What's the total budget?
+            </button>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant-message">
+                👋 Hello! I'm your AI assistant. Ask me anything about the military project database!<br><br>
+                <strong>Powered by:</strong> AI Database API (Hugging Face Spaces)
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Querying database...</div>
+        </div>
+
+        <div class="input-container">
+            <input
+                type="text"
+                id="questionInput"
+                placeholder="Ask a question... (e.g., How many active projects?)"
+                onkeypress="handleKeyPress(event)"
+            >
+            <button onclick="submitQuestion()" id="submitBtn">Send</button>
+        </div>
+
+        <div class="footer">
+            Data sourced from AI Database API • All data is synthetic
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'https://im-lenore-aiready-database-api.hf.space';
+        let sessionId = null;
+
+        async function submitQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            // Add user message to chat
+            addMessage(question, 'user');
+            input.value = '';
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                // Call the database API directly
+                const response = await fetch(`${API_BASE}/api/v1/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        session_id: sessionId,
+                        include_sql: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionId = data.session_id;
+
+                    // Format the response
+                    let responseText = formatResponse(data);
+                    addMessage(responseText, 'assistant');
+                } else {
+                    addMessage('❌ Sorry, I encountered an error: ' + data.error, 'assistant');
+                }
+            } catch (error) {
+                addMessage('❌ Sorry, I could not connect to the database. Please try again.', 'assistant');
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        function formatResponse(data) {
+            let html = '';
+
+            // Format the data
+            if (data.row_count === 0) {
+                html += 'No results found.';
+            } else if (data.row_count === 1 && data.data[0] && Object.keys(data.data[0]).length === 1) {
+                // Single value result
+                const value = Object.values(data.data[0])[0];
+                html += `✅ The answer is: <strong>${value}</strong>`;
+            } else if (data.row_count <= 5) {
+                // Show all results
+                html += `✅ I found ${data.row_count} result${data.row_count > 1 ? 's' : ''}:<br><br>`;
+                html += '<div class="data">';
+                html += '<pre>' + JSON.stringify(data.data, null, 2) + '</pre>';
+                html += '</div>';
+            } else {
+                // Summarize
+                html += `✅ I found ${data.row_count} results. Here are the first few:<br><br>`;
+                html += '<div class="data">';
+                html += '<pre>' + JSON.stringify(data.data.slice(0, 5), null, 2) + '</pre>';
+                html += `<br><em>...and ${data.row_count - 5} more</em>`;
+                html += '</div>';
+            }
+
+            // Add SQL
+            if (data.sql) {
+                html += '<div class="sql"><strong>SQL Query:</strong><br>' + escapeHtml(data.sql) + '</div>';
+            }
+
+            // Add execution time
+            html += `<br><small>⚡ Executed in ${data.execution_time_ms.toFixed(2)}ms</small>`;
+
+            return html;
+        }
+
+        function addMessage(text, type) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function askQuestion(question) {
+            document.getElementById('questionInput').value = question;
+            submitQuestion();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                submitQuestion();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-focus input on load
+        window.onload = function() {
+            document.getElementById('questionInput').focus();
+        };
+    </script>
+</body>
+</html>

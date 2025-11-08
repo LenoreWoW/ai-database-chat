@@ -615,9 +615,9 @@
 
         const CONVERSATIONAL_RESPONSES = {
             greeting: [
-                "Hello! I'm your AI assistant for the military project database. I can help you query project data, user information, budgets, and more. What would you like to know?",
-                "Hi there! I'm here to help you explore the database. Ask me anything about projects, departments, users, or budgets!",
-                "Hey! Ready to dive into the data? I can answer questions about the military project database."
+                "Hello! I'm your AI assistant. I can help you with general questions and I have access to a military project database. What would you like to know?",
+                "Hi there! I'm here to chat and help you explore the database. Ask me anything!",
+                "Hey! How can I help you today?"
             ],
             thanks: [
                 "You're welcome! Let me know if you need anything else.",
@@ -625,42 +625,161 @@
                 "My pleasure! What else can I help you with?"
             ],
             goodbye: [
-                "Goodbye! Come back anytime you need to query the database.",
+                "Goodbye! Come back anytime!",
                 "See you later! Happy to help anytime.",
                 "Take care! I'll be here when you need me."
             ],
             capabilities: [
-                "I can help you query the military project database! I understand natural language questions and convert them to SQL. Try asking about projects, users, departments, budgets, tasks, or any other data in the 65-table database.",
-                "I'm an AI-powered database assistant. Ask me questions in plain English, and I'll query the database for you. For example: 'How many active projects?' or 'Show me all departments'."
+                "I'm an AI assistant that can have conversations and answer questions. I also have access to a military project database with information about projects, users, departments, budgets, tasks, and more. Ask me anything!",
+                "I can chat with you about various topics and query a database when you need specific information. What would you like to know?"
             ],
             help: [
-                "I can answer questions about the database in natural language. Try:\n• 'How many projects are there?'\n• 'Show me all departments'\n• 'What's the total budget?'\n• 'List all users'\n\nJust ask naturally and I'll figure out the SQL!",
-                "Ask me anything about the database! I understand questions like 'How many users?', 'Show me project budgets', or 'List all departments'. Just type your question naturally."
+                "I can help with:\n• General conversation and questions\n• Database queries (projects, users, departments, budgets, etc.)\n• Information about the system\n\nJust ask naturally - I'll understand!",
+                "Ask me anything! I can chat normally or help you find information in the database. What would you like to know?"
             ],
-            default: [
-                "I'm here to help with database queries. Try asking about projects, users, departments, or budgets!",
-                "Let me know what you'd like to find in the database!"
-            ]
+            general: null // Will use smart response generation
         };
 
-        function isConversational(text) {
-            for (let pattern of GREETINGS) {
-                if (pattern.test(text)) {
-                    return 'greeting';
+        function generateSmartResponse(question) {
+            const q = question.toLowerCase();
+
+            // Weather
+            if (q.includes('weather') || q.includes('temperature')) {
+                return "I don't have access to real-time weather data, but I can help you find information in the database! Is there anything about projects, users, or departments you'd like to know?";
+            }
+
+            // Time/Date
+            if (q.includes('what time') || q.includes('what date') || q.includes('today')) {
+                const now = new Date();
+                return `Today is ${now.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})} at ${now.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}. How can I help you?`;
+            }
+
+            // Capabilities
+            if (q.includes('what can you') || q.includes('what do you')) {
+                return "I'm an AI assistant with access to a military project database. I can have conversations with you and answer questions about projects, users, departments, budgets, tasks, and more. What would you like to know?";
+            }
+
+            // Math
+            if (q.includes('what is') && (q.includes('+') || q.includes('-') || q.includes('*') || q.includes('/'))) {
+                try {
+                    const match = q.match(/(\d+)\s*([+\-*/])\s*(\d+)/);
+                    if (match) {
+                        const [, a, op, b] = match;
+                        const num1 = parseFloat(a);
+                        const num2 = parseFloat(b);
+                        let result;
+                        if (op === '+') result = num1 + num2;
+                        else if (op === '-') result = num1 - num2;
+                        else if (op === '*') result = num1 * num2;
+                        else if (op === '/') result = num1 / num2;
+                        return `The answer is ${result}. Is there anything else I can help you with?`;
+                    }
+                } catch (e) {}
+            }
+
+            // Jokes
+            if (q.includes('joke') || q.includes('funny')) {
+                const jokes = [
+                    "Why do programmers prefer dark mode? Because light attracts bugs! 😄",
+                    "Why did the database administrator leave his wife? She had one-to-many relationships! 😅",
+                    "What's a database's favorite exercise? Table tennis! 🏓"
+                ];
+                return jokes[Math.floor(Math.random() * jokes.length)] + "\n\nNeed help with anything else?";
+            }
+
+            // General knowledge questions
+            if (q.includes('who is') || q.includes('what is') || q.includes('tell me about')) {
+                return "I'm an AI assistant focused on helping with conversations and database queries. While I can chat with you, I'm particularly good at finding information in the military project database. Would you like to ask about projects, users, departments, or budgets?";
+            }
+
+            // Default intelligent response
+            const responses = [
+                "That's an interesting question! While I can chat with you, I'm especially good at querying the military project database. Is there anything about the database you'd like to know?",
+                "I appreciate you asking! I'm here to help with conversations and database queries. Would you like to know about projects, users, departments, or other database information?",
+                "Thanks for chatting with me! I can answer general questions and I have detailed information about projects, users, departments, and budgets. What would you like to explore?",
+                "I'm here to help! While I can have conversations, my strength is querying the database. Want to ask about any projects, users, or departments?"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function isDatabaseQuestion(text) {
+            const dbKeywords = [
+                // Direct database references
+                'database', 'table', 'record', 'query', 'sql',
+
+                // Project-related
+                'project', 'projects',
+
+                // User/People related (when asking about database users)
+                'user', 'users', 'employee', 'employees', 'staff', 'team member',
+                'manager', 'managers', 'assigned to', 'working on',
+
+                // Department related
+                'department', 'departments', 'unit', 'units',
+
+                // Company related
+                'company', 'companies', 'contractor', 'vendor', 'client',
+
+                // Financial
+                'budget', 'cost', 'expense', 'spending', 'financial',
+
+                // Task/Work related
+                'task', 'tasks', 'assignment', 'deadline', 'milestone',
+
+                // Data queries
+                'how many', 'show me', 'list', 'display', 'find',
+                'count', 'total', 'sum', 'average', 'maximum', 'minimum',
+                'which', 'what is the', 'who is', 'when',
+
+                // Status
+                'status', 'progress', 'completion', 'overdue',
+
+                // Contracts
+                'contract', 'contracts', 'agreement'
+            ];
+
+            const q = text.toLowerCase();
+
+            // Check if question contains database keywords
+            for (let keyword of dbKeywords) {
+                if (q.includes(keyword)) {
+                    return true;
                 }
             }
 
-            for (let pattern of CONVERSATIONAL) {
+            return false;
+        }
+
+        function isSimpleGreeting(text) {
+            const simplePatterns = [
+                /^(hi|hello|hey|greetings|good morning|good afternoon|good evening|sup|yo)[\s!.?]*$/i,
+                /^how are you[\s!.?]*$/i,
+                /^what'?s up[\s!.?]*$/i,
+                /^nice to meet you[\s!.?]*$/i,
+                /^(thank you|thanks|thx|ty)[\s!.?]*$/i,
+                /^(bye|goodbye|see you|later)[\s!.?]*$/i,
+                /^(ok|okay|alright|got it|cool)[\s!.?]*$/i,
+            ];
+
+            for (let pattern of simplePatterns) {
                 if (pattern.test(text)) {
-                    if (/thank/i.test(text)) return 'thanks';
-                    if (/bye|goodbye|see you|later/i.test(text)) return 'goodbye';
-                    if (/who|what (are you|can you)/i.test(text)) return 'capabilities';
-                    if (/help/i.test(text)) return 'help';
-                    return 'default';
+                    return true;
                 }
             }
+            return false;
+        }
 
-            return null;
+        function getConversationType(text) {
+            const q = text.toLowerCase().trim();
+
+            if (/^(hi|hello|hey|greetings|good morning)/.test(q)) return 'greeting';
+            if (/^(thank|thanks|thx)/.test(q)) return 'thanks';
+            if (/^(bye|goodbye|see you)/.test(q)) return 'goodbye';
+            if (/^who (are you|made you|created you)/.test(q)) return 'capabilities';
+            if (/^what (can you do|are you)/.test(q)) return 'capabilities';
+            if (/^help/.test(q)) return 'help';
+
+            return 'general';
         }
 
         function getConversationalResponse(type) {
@@ -744,17 +863,25 @@
 
             document.getElementById('sendBtn').disabled = true;
 
-            const conversationType = isConversational(question);
-
-            if (conversationType) {
+            // Check if it's a database question
+            if (!isDatabaseQuestion(question)) {
+                // Handle as conversation
                 setTimeout(() => {
-                    const response = getConversationalResponse(conversationType);
+                    let response;
+                    if (isSimpleGreeting(question)) {
+                        const convType = getConversationType(question);
+                        response = getConversationalResponse(convType);
+                    } else {
+                        // Smart general response
+                        response = generateSmartResponse(question);
+                    }
                     addMessage(response, 'assistant');
                     document.getElementById('sendBtn').disabled = false;
-                }, 500);
+                }, 300);
                 return;
             }
 
+            // It's a database question - query the API
             const loadingId = showLoading();
 
             try {
